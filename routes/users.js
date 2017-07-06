@@ -3,6 +3,7 @@ var router = express.Router();
 var Page = require('../models/Page')
 var JsonResult = require('../models/JsonResult')
 var User = require('../models/User')
+var MD5 = require('md5')
 
 /* GET users listing. */
 router.post('/login', function (req, res, next) {
@@ -25,10 +26,6 @@ router.post('/login', function (req, res, next) {
 });
 
 router.post('/getUser', function (req, res, next) {
-    /*var user = new User({name: 'wcf',age: 25})
-    user.save(function () {
-        console.log('存储成功！')
-    })*/
 
     var page = new Page()
     var jsonResult = new JsonResult()
@@ -54,6 +51,8 @@ router.post('/addItem',function (req, res, next) {
 
     var userItem = req.param('form')
     userItem['rTime'] = new Date()
+    userItem['password'] = MD5(userItem['password'].substring(3,7))
+    console.log(userItem['password'])
     var user = new User(userItem)
     user.save(function (err) {
         if (err) {
