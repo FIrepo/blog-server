@@ -7,9 +7,26 @@ var MD5 = require('md5')
 
 /* GET users listing. */
 router.post('/login', function (req, res, next) {
+    var jsonResult = new JsonResult()
     var username = req.param('username');
     var password = req.param('password');
-    if (username === 'admin' && password === 'admin') {
+
+    User.findOne({ userName: username}, function (err, doc){
+        if( doc ){
+            if(MD5(password.substring(3,7)) === doc.password) {
+                jsonResult.setData({username: doc.userName})
+            } else {
+                jsonResult.setStatue(1)
+                jsonResult.setMessage('密码不正确！')
+            }
+        } else {
+            jsonResult.setStatue(1)
+            jsonResult.setMessage('用户名不存在')
+        }
+        res.json(jsonResult)
+    });
+
+    /*if (username === 'admin' && password === 'admin') {
         res.json({
             statue: 0,
             message: '登录成功',
@@ -22,7 +39,7 @@ router.post('/login', function (req, res, next) {
             statue: 1,
             message: '用户名或密码不正确！'
         })
-    }
+    }*/
 });
 
 router.post('/getUser', function (req, res, next) {
