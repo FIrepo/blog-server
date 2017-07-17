@@ -49,31 +49,50 @@ router.post('/getUser', function (req, res, next) {
 
 })
 
+// 保存方法
 router.post('/addItem',function (req, res, next) {
     var jsonResult = new JsonResult()
-
     var userItem = req.param('form')
-    userItem['rTime'] = new Date()
-    userItem['password'] = MD5(userItem['password'].substring(3,7))
-    console.log(userItem['password'])
-    var user = new User(userItem)
-    user.save(function (err) {
-        if (err) {
-            jsonResult.setStatue(1)
-            switch (err.code){
-                case 11000:
-                    jsonResult.setMessage(userItem.userName +' 用户名已存在！')
-                    break
-                default: 
-                    jsonResult.setMessage(err)
+
+    if (userItem['password'].length !== 32) {
+        userItem['password'] = MD5(userItem['password'].substring(3,7))
+    }
+
+
+    console.log(req.param('_id'))
+    if (req.param('_id')) {
+        User.update({
+            '_id': mongoose.Types.ObjectId(req.param('_id'))},
+            {$set: userItem},
+            function (err) {
+                if (err) {
+                    jsonResult.setStatue(1)
+                    jsonResult.setMessage(err.message)
+                }
+                res.json(jsonResult)
+            })
+    } else {
+        userItem['rTime'] = new Date()
+        var user = new User(userItem)
+        user.save(function (err) {
+            if (err) {
+                jsonResult.setStatue(1)
+                switch (err.code){
+                    case 11000:
+                        jsonResult.setMessage(userItem.userName +' 用户名已存在！')
+                        break
+                    default:
+                        jsonResult.setMessage(err)
+                }
             }
-        }
-        res.json(jsonResult)
-    })
+            res.json(jsonResult)
+        })
+    }
+
 })
 
 // 删除方法
-router.post('/deleteItem/:username/:id',function(req,res,next){
+router.post('/deleteItem/:id',function(req,res,next){
     var jsonResult = new JsonResult()
 
    /* if (req.params.username === 'admin') {
@@ -82,7 +101,7 @@ router.post('/deleteItem/:username/:id',function(req,res,next){
         res.json(jsonResult)
     }*/
 
-    User.remove({_id: mongoose.Types.ObjectId(req.params.username)}, function(err){
+    User.remove({_id: mongoose.Types.ObjectId(req.params.id)}, function(err){
         if (err) {      
             jsonResult.setStatue = 1
             jsonResult.setMessage = err
@@ -91,6 +110,19 @@ router.post('/deleteItem/:username/:id',function(req,res,next){
     })
 
 
+})
+
+// 查询单条
+router.post('/getOne/:id',function (req,res,next) {
+    var jsonResult = new JsonResult()
+    User.findOne({'_id': mongoose.Types.ObjectId(req.params.id)},function (err, doc) {
+        if (err) {
+            jsonResult.setStatue = 1
+            jsonResult.setMessage = err
+        }
+        jsonResult.setData(doc)
+        res.json(jsonResult)
+    })
 })
 
 module.exports = router
