@@ -5,7 +5,7 @@ var mongoose = require('mongoose')
 var db = require('./db.js')
 
 var UserSchema = mongoose.Schema({
-    "userName": String,
+    "userName": {type:String, unique:true},
     "password": String,
     "gender": String,
     "tel": Number,

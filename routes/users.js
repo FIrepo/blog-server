@@ -4,12 +4,13 @@ var Page = require('../models/Page')
 var JsonResult = require('../models/JsonResult')
 var User = require('../models/User')
 var MD5 = require('md5')
+var mongoose = require('mongoose')
 
 /* GET users listing. */
 router.post('/login', function (req, res, next) {
     var jsonResult = new JsonResult()
     var username = req.param('username');
-    var password = req.param('password');
+    var password = req.param('password'); 
 
     User.findOne({ userName: username}, function (err, doc){
         if( doc ){
@@ -25,21 +26,6 @@ router.post('/login', function (req, res, next) {
         }
         res.json(jsonResult)
     });
-
-    /*if (username === 'admin' && password === 'admin') {
-        res.json({
-            statue: 0,
-            message: '登录成功',
-            data: {
-                username: '吴成凡'
-            }
-        })
-    } else {
-        res.json({
-            statue: 1,
-            message: '用户名或密码不正确！'
-        })
-    }*/
 });
 
 router.post('/getUser', function (req, res, next) {
@@ -73,12 +59,38 @@ router.post('/addItem',function (req, res, next) {
     var user = new User(userItem)
     user.save(function (err) {
         if (err) {
-            console.log(err.message)
             jsonResult.setStatue(1)
-            jsonResult.setMessage(err.message)
+            switch (err.code){
+                case 11000:
+                    jsonResult.setMessage(userItem.userName +' 用户名已存在！')
+                    break
+                default: 
+                    jsonResult.setMessage(err)
+            }
         }
         res.json(jsonResult)
     })
+})
+
+// 删除方法
+router.post('/deleteItem/:username/:id',function(req,res,next){
+    var jsonResult = new JsonResult()
+
+   /* if (req.params.username === 'admin') {
+        jsonResult.setStatue = 1
+        jsonResult.setMessage = '超级管理员不能删除！'
+        res.json(jsonResult)
+    }*/
+
+    User.remove({_id: mongoose.Types.ObjectId(req.params.username)}, function(err){
+        if (err) {      
+            jsonResult.setStatue = 1
+            jsonResult.setMessage = err
+        } 
+        res.json(jsonResult)
+    })
+
+
 })
 
 module.exports = router
