@@ -15,7 +15,11 @@ router.post('/login', function (req, res, next) {
     User.findOne({ userName: username}, function (err, doc){
         if( doc ){
             if(MD5(password.substring(3,7)) === doc.password) {
-                jsonResult.setData({username: doc.userName})
+                req.session.user = username
+                jsonResult.setData({
+                    username: doc.userName,
+                    role: doc.role
+                })
             } else {
                 jsonResult.setStatue(1)
                 jsonResult.setMessage('密码不正确！')
@@ -57,7 +61,6 @@ router.post('/addItem',function (req, res, next) {
     if (userItem['password'].length !== 32) {
         userItem['password'] = MD5(userItem['password'].substring(3,7))
     }
-
 
     console.log(req.param('_id'))
     if (req.param('_id')) {
