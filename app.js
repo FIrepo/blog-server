@@ -26,14 +26,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
     resave: true, // don't save session if unmodified
     saveUninitialized: false, // don't create session until something stored
-    secret: 'love'
+    secret: 'love',
+    cookie: {maxAge: 1000 * 60 * 100}
 }))
 
 // 登录拦截
 app.use(function (req, res, next) {
     console.log(req.session.user)
     if (!req.session.user) {
-        if (req.url === "/api/users/login") {
+        if (req.url === '/api/users/login' || req.url === '/api/users/loginOut') {
             next();//如果请求的地址是登录则通过，进行下一个请求
         }
         else {

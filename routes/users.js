@@ -32,6 +32,15 @@ router.post('/login', function (req, res, next) {
     });
 });
 
+// 登出
+router.post('/loginOut', function (req, res, next) {
+    var jsonResult = new JsonResult()
+    var username = req.param('username')
+    req.session.user = false
+    res.json(jsonResult)
+})
+
+// 获取列表
 router.post('/getUser', function (req, res, next) {
 
     var page = new Page()
@@ -62,7 +71,6 @@ router.post('/addItem',function (req, res, next) {
         userItem['password'] = MD5(userItem['password'].substring(3,7))
     }
 
-    console.log(req.param('_id'))
     if (req.param('_id')) {
         User.update({
             '_id': mongoose.Types.ObjectId(req.param('_id'))},
