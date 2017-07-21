@@ -10,11 +10,11 @@ var mongoose = require('mongoose')
 router.post('/login', function (req, res, next) {
     var jsonResult = new JsonResult()
     var username = req.param('username');
-    var password = req.param('password'); 
+    var password = req.param('password');
 
-    User.findOne({ userName: username}, function (err, doc){
-        if( doc ){
-            if(MD5(password.substring(3,7)) === doc.password) {
+    User.findOne({userName: username}, function (err, doc) {
+        if (doc) {
+            if (MD5(password.substring(3, 7)) === doc.password) {
                 req.session.user = username
                 jsonResult.setData({
                     username: doc.userName,
@@ -40,6 +40,36 @@ router.post('/loginOut', function (req, res, next) {
     res.json(jsonResult)
 })
 
+// 重置密码
+router.post('/resetPassword', function (req, res, next) {
+    var jsonResult = new JsonResult()
+    var id = req.param('id')
+    var password = MD5(req.param('password').substring(3, 7))
+    User.findOne({'userName': req.session.user}, function (err, doc) {
+        if (doc.password === password) {
+
+            if (doc.role !== '0') {
+                jsonResult.setStatue(1)
+                jsonResult.setMessage('您没有权限！')
+            }else{
+                User.update(
+                    {'_id': mongoose.Types.ObjectId(id)},
+                    {$set:{'password':MD5('000000'.substring(3, 7))}}
+                    ,function (err) {
+                        if (err) {
+                            sonResult.setStatue(1)
+                            jsonResult.setMessage(err.message)
+                        }})
+            }
+        } else {
+            jsonResult.setStatue(1)
+            jsonResult.setMessage('密码不正确！')
+        }
+        res.json(jsonResult)
+    })
+
+})
+
 // 获取列表
 router.post('/getUser', function (req, res, next) {
 
@@ -51,7 +81,7 @@ router.post('/getUser', function (req, res, next) {
         if (err) {
             jsonResult.setStatue(1)
             jsonResult.setMessage(err.message)
-        }else{
+        } else {
             page.setRows(rows)
             page.setTotal(rows.length)
             jsonResult.setData(page)
@@ -63,17 +93,18 @@ router.post('/getUser', function (req, res, next) {
 })
 
 // 保存方法
-router.post('/addItem',function (req, res, next) {
+router.post('/addItem', function (req, res, next) {
     var jsonResult = new JsonResult()
     var userItem = req.param('form')
 
     if (userItem['password'].length !== 32) {
-        userItem['password'] = MD5(userItem['password'].substring(3,7))
+        userItem['password'] = MD5(userItem['password'].substring(3, 7))
     }
 
     if (req.param('_id')) {
         User.update({
-            '_id': mongoose.Types.ObjectId(req.param('_id'))},
+                '_id': mongoose.Types.ObjectId(req.param('_id'))
+            },
             {$set: userItem},
             function (err) {
                 if (err) {
@@ -88,9 +119,9 @@ router.post('/addItem',function (req, res, next) {
         user.save(function (err) {
             if (err) {
                 jsonResult.setStatue(1)
-                switch (err.code){
+                switch (err.code) {
                     case 11000:
-                        jsonResult.setMessage(userItem.userName +' 用户名已存在！')
+                        jsonResult.setMessage(userItem.userName + ' 用户名已存在！')
                         break
                     default:
                         jsonResult.setMessage(err)
@@ -103,20 +134,20 @@ router.post('/addItem',function (req, res, next) {
 })
 
 // 删除方法
-router.post('/deleteItem/:id',function(req,res,next){
+router.post('/deleteItem/:id', function (req, res, next) {
     var jsonResult = new JsonResult()
 
-   /* if (req.params.username === 'admin') {
-        jsonResult.setStatue = 1
-        jsonResult.setMessage = '超级管理员不能删除！'
-        res.json(jsonResult)
-    }*/
+    /* if (req.params.username === 'admin') {
+     jsonResult.setStatue = 1
+     jsonResult.setMessage = '超级管理员不能删除！'
+     res.json(jsonResult)
+     }*/
 
-    User.remove({_id: mongoose.Types.ObjectId(req.params.id)}, function(err){
-        if (err) {      
+    User.remove({_id: mongoose.Types.ObjectId(req.params.id)}, function (err) {
+        if (err) {
             jsonResult.setStatue = 1
             jsonResult.setMessage = err
-        } 
+        }
         res.json(jsonResult)
     })
 
@@ -124,9 +155,9 @@ router.post('/deleteItem/:id',function(req,res,next){
 })
 
 // 查询单条
-router.post('/getOne/:id',function (req,res,next) {
+router.post('/getOne/:id', function (req, res, next) {
     var jsonResult = new JsonResult()
-    User.findOne({'_id': mongoose.Types.ObjectId(req.params.id)},function (err, doc) {
+    User.findOne({'_id': mongoose.Types.ObjectId(req.params.id)}, function (err, doc) {
         if (err) {
             jsonResult.setStatue = 1
             jsonResult.setMessage = err
