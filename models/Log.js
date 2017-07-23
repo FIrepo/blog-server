@@ -6,29 +6,32 @@ var db = require('./db.js')
 var async = require('async')
 var Page = require('./Page.js')
 
-var UserSchema = mongoose.Schema({
-    "userName": {type:String, unique:true},
-    "password": String,
-    "gender": String,
-    "tel": Number,
-    "role": String,
-    "rTime": Date,
-    "remark": String
+var LogSchema = mongoose.Schema({
+    "username": String ,
+    "time": Date,
+    "desc": String
 })
 
+// 增加一个实例方法，创造一个日志
+LogSchema.statics.createOneLog = function(req, desc, cb) {
+    return this.create({
+        username : req.session.user,
+        time: new Date(),
+        desc: desc
+    },cb)
+}
+
 // 分页查询
-UserSchema.statics.queryByPage = function (page, cb) {
+LogSchema.statics.queryByPage = function (page, cb) {
     var Model = this
     var pageSize = page.pageSize || 10
     var query = page.query
     var currentPage = page.currentPage || 1
     var start = (currentPage-1) * pageSize
     var pageResult = new Page()
-    // 查询条件
     queryParams = {
-        userName: new RegExp(query.userName),
-        role: query.role ? query.role : new RegExp(query.role),
-        $and: query.rangeTime[0] ? [{rTime:{"$gt":query.rangeTime[0]}},{rTime:{"$lt":query.rangeTime[1]}}] : [{},{}]
+        username: new RegExp(query.username),
+        $and: query.rangeTime[0] ? [{time:{"$gt":query.rangeTime[0]}},{time:{"$lt":query.rangeTime[1]}}] : [{},{}]
     }
     async.parallel({
         total: function (done) {  // 查询数量
@@ -37,10 +40,10 @@ UserSchema.statics.queryByPage = function (page, cb) {
             })
         },
         rows: function (done) {   // 查询一页的记录
-            Model.find(queryParams).skip(start).limit(pageSize).sort('_id').exec(function (err, rows) {
+            Model.find(queryParams).skip(start).limit(pageSize).exec(function (err, rows) {
                 done(err, rows);
             });
-        },
+        }
     },function (err, result) {
         pageResult.setRows(result.rows)
         pageResult.setTotal(result.total)
@@ -50,4 +53,6 @@ UserSchema.statics.queryByPage = function (page, cb) {
     })
 }
 
-module.exports = db.model('User', UserSchema)
+var Log = db.model('Log', LogSchema)
+
+module.exports = Log;

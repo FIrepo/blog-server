@@ -8,6 +8,7 @@ var session = require('express-session');
 
 var index = require('./routes/index');
 var users = require('./routes/users');
+var log = require('./routes/log');
 
 var app = express();
 
@@ -31,23 +32,24 @@ app.use(session({
 }))
 
 // 登录拦截
-app.use(function (req, res, next) {
-    if (!req.session.user) {
-        if (req.url === '/api/users/login' || req.url === '/api/users/loginOut') {
-            next();//如果请求的地址是登录则通过，进行下一个请求
-        }
-        else {
-            res.json({
-                statue: 5
-            })
-        }
-    } else if (req.session.user) {
-        next();
-    }
-})
+// app.use(function (req, res, next) {
+//     if (!req.session.user) {
+//         if (req.url === '/api/users/login' || req.url === '/api/users/loginOut') {
+//             next();//如果请求的地址是登录则通过，进行下一个请求
+//         }
+//         else {
+//             res.json({
+//                 statue: 5
+//             })
+//         }
+//     } else if (req.session.user) {
+//         next();
+//     }
+// })
 
 app.use('/', index);
 app.use('/api/users', users);
+app.use('/api/log', log);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
     var err = new Error('Not Found');
