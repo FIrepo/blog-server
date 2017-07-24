@@ -13,18 +13,23 @@ var BlogSchema = mongoose.Schema({
     "preTitle": String,
     // 所属分类
     "titleType": Array,
-    // 查看权限
+    // 查看权限 0: 自己可看,1: 所有人可看
     "authority": String,
     // 创建时间
-    "cTime": Data,
+    "cTime": Date,
     // 作者
     "author": String,
     // 内容
-    "content": String
+    "content": String,
+    // 关键字
+    "keyword": Array,
+    // 状态 0: 发布,1: 草稿
+    "statue": String
+
 })
 
 // 分页查询
-/*LogSchema.statics.queryByPage = function (page, cb) {
+BlogSchema.statics.queryByPage = function (page, cb) {
     var Model = this
     var pageSize = page.pageSize || 10
     var query = page.query
@@ -32,8 +37,8 @@ var BlogSchema = mongoose.Schema({
     var start = (currentPage-1) * pageSize
     var pageResult = new Page()
     queryParams = {
-        username: new RegExp(query.username),
-        $and: query.rangeTime[0] ? [{time:{"$gt":query.rangeTime[0]}},{time:{"$lt":query.rangeTime[1]}}] : [{},{}]
+        /*username: new RegExp(query.username),
+        $and: query.rangeTime[0] ? [{time:{"$gt":query.rangeTime[0]}},{time:{"$lt":query.rangeTime[1]}}] : [{},{}]*/
     }
     async.parallel({
         total: function (done) {  // 查询数量
@@ -42,7 +47,7 @@ var BlogSchema = mongoose.Schema({
             })
         },
         rows: function (done) {   // 查询一页的记录
-            Model.find(queryParams).skip(start).limit(pageSize).exec(function (err, rows) {
+            Model.find(queryParams,{"content":0,}).skip(start).limit(pageSize).exec(function (err, rows) {
                 done(err, rows);
             });
         }
@@ -53,6 +58,6 @@ var BlogSchema = mongoose.Schema({
         pageResult.setCurrentPage(currentPage)
         cb(err,pageResult)
     })
-}*/
+}
 
 module.exports = db.model('Blog', BlogSchema)

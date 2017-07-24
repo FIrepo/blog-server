@@ -20,7 +20,7 @@ router.post('/login', function (req, res, next) {
                     username: doc.userName,
                     role: doc.role
                 })
-                Log.createOneLog(req,username+'登录成功')
+                Log.createOneLog(req, username + '登录成功')
             } else {
                 jsonResult.setStatue(1)
                 jsonResult.setMessage('密码不正确！')
@@ -36,7 +36,7 @@ router.post('/login', function (req, res, next) {
 // 登出
 router.post('/loginOut', function (req, res, next) {
     var jsonResult = new JsonResult()
-    Log.createOneLog(req, req.session.user+'登出',function (err) {
+    Log.createOneLog(req, req.session.user + '登出', function (err) {
         req.session.user = false
         res.json(jsonResult)
     })
@@ -56,16 +56,16 @@ router.post('/resetPassword', function (req, res, next) {
             if (doc.role !== '0') {
                 jsonResult.setStatue(1)
                 jsonResult.setMessage('您没有权限！')
-            }else{
+            } else {
                 User.update(
                     {'_id': mongoose.Types.ObjectId(id)},
-                    {$set:{'password':MD5('000000'.substring(3, 7))}}
-                    ,function (err) {
+                    {$set: {'password': MD5('000000'.substring(3, 7))}}
+                    , function (err) {
                         if (err) {
                             sonResult.setStatue(1)
                             jsonResult.setMessage(err.message)
                         } else {
-                            Log.createOneLog(req,req.session.user + '重置了' + changedName +'的密码！')
+                            Log.createOneLog(req, req.session.user + '重置了' + changedName + '的密码！')
                         }
                     })
             }
@@ -83,13 +83,13 @@ router.post('/getUserByToken', function (req, res, next) {
     var jsonResult = new JsonResult()
     var token = req.cookies['Admin-Token']
     if (token) {
-        User.findOne({'userName': token},function (err, user) {
+        User.findOne({'userName': token}, function (err, user) {
             if (err) {
                 jsonResult.setStatue = 1
                 jsonResult.setMessage = err.message
             } else {
                 jsonResult.setData({
-                    username : user.userName,
+                    username: user.userName,
                     role: user.role
                 })
             }
@@ -108,7 +108,7 @@ router.post('/getUser', function (req, res, next) {
     var page = new Page()
     var jsonResult = new JsonResult()
 
-    User.queryByPage(req.param('page'),function (err,users) {
+    User.queryByPage(req.param('page'), function (err, users) {
         if (err) {
             jsonResult.setStatue(1)
             jsonResult.setMessage(err.message)
@@ -118,17 +118,17 @@ router.post('/getUser', function (req, res, next) {
     })
     /*User.find(function (err, rows) {
 
-        if (err) {
-            jsonResult.setStatue(1)
-            jsonResult.setMessage(err.message)
-        } else {
-            page.setRows(rows)
-            page.setTotal(rows.length)
-            jsonResult.setData(page)
-        }
+     if (err) {
+     jsonResult.setStatue(1)
+     jsonResult.setMessage(err.message)
+     } else {
+     page.setRows(rows)
+     page.setTotal(rows.length)
+     jsonResult.setData(page)
+     }
 
-        res.json(jsonResult)
-    })*/
+     res.json(jsonResult)
+     })*/
 
 })
 
@@ -142,18 +142,15 @@ router.post('/addItem', function (req, res, next) {
     }
 
     if (req.param('_id')) {
-        User.update({
-                '_id': mongoose.Types.ObjectId(req.param('_id'))
-            },
+        User.update({'_id': mongoose.Types.ObjectId(req.param('_id'))},
             {$set: userItem},
             function (err) {
                 if (err) {
                     jsonResult.setStatue(1)
                     jsonResult.setMessage(err.message)
                 }
-                Log.createOneLog(req, req.session.user+'更新了'+userItem.userName+'用户信息')
+                Log.createOneLog(req, req.session.user + '更新了' + userItem.userName + '用户信息')
                 res.json(jsonResult)
-
             })
     } else {
         userItem['rTime'] = new Date()
@@ -169,7 +166,7 @@ router.post('/addItem', function (req, res, next) {
                         jsonResult.setMessage(err)
                 }
             } else {
-                Log.createOneLog(req, req.session.user+'新增了'+userItem.userName+'用户')
+                Log.createOneLog(req, req.session.user + '新增了' + userItem.userName + '用户')
             }
             res.json(jsonResult)
         })
