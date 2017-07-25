@@ -7,14 +7,10 @@ var async = require('async')
 var Page = require('./Page.js')
 
 var BlogSchema = mongoose.Schema({
-    // 主标题
-    "mainTitle": String,
-    // 副标题
-    "preTitle": String,
+    // 文章名
+    "title": String,
     // 所属分类
     "titleType": Array,
-    // 查看权限 0: 自己可看,1: 所有人可看
-    "authority": String,
     // 创建时间
     "cTime": Date,
     // 作者
