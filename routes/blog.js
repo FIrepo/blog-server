@@ -3,6 +3,7 @@
  */
 var express = require('express')
 var router = express.Router()
+var mongoose = require('mongoose')
 var Blog = require('../models/blog')
 var Log = require('../models/Log')
 var JsonResult = require('../models/JsonResult')
@@ -28,14 +29,14 @@ router.post('/save',function (req, res, next) {
     blog['cTime'] = new Date()
     if (blog._id) {
         //  修改
-        Blog.update({'_id': mongoose.Types.ObjectId(req.param('_id'))},
+        Blog.update({'_id': mongoose.Types.ObjectId(blog._id)},
             {$set: blog},
             function (err) {
                 if (err) {
                     jsonResult.setStatue(1)
                     jsonResult.setMessage(err.message)
                 }
-                Log.createOneLog(req, req.session.user + '更新了题目为【' + blog.mainTitle + '】的文章')
+                Log.createOneLog(req, req.session.user + '更新了题目为【' + blog.title + '】的文章')
                 res.json(jsonResult)
             })
     } else {
@@ -46,11 +47,24 @@ router.post('/save',function (req, res, next) {
                 jsonResult.setStatue(1)
                 jsonResult.setMessage(err.message)
             } else {
-                Log.createOneLog(req, req.session.user+'新增了题目为【'+blog.mainTitle+'】的文章')
+                Log.createOneLog(req, req.session.user+'新增了题目为【'+blog.title+'】的文章')
             }
             res.json(jsonResult)
         })
     }
+})
+
+// 根据id获得一条数据
+router.post('/getBlog', function (req, res, next) {
+    var jsonResult = new JsonResult()
+    Blog.findById(req.param('id'), function (err, blog) {
+        if (err) {
+            jsonResult.setStatue(1)
+        } else {
+            jsonResult.setData(blog)
+        }
+        res.json(jsonResult)
+    })
 })
 
 module.exports = router

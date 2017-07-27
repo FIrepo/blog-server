@@ -10,7 +10,7 @@ var BlogSchema = mongoose.Schema({
     // 文章名
     "title": String,
     // 所属分类
-    "titleType": Array,
+    "titleType": '',
     // 创建时间
     "cTime": Date,
     // 作者
