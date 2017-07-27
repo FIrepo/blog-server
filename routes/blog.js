@@ -4,7 +4,8 @@
 var express = require('express')
 var router = express.Router()
 var mongoose = require('mongoose')
-var Blog = require('../models/blog')
+var Blog = require('../models/Blog')
+var BlogClass = require('../models/BlogClass')
 var Log = require('../models/Log')
 var JsonResult = require('../models/JsonResult')
 var Page = require('../models/Page')
@@ -62,6 +63,22 @@ router.post('/getBlog', function (req, res, next) {
             jsonResult.setStatue(1)
         } else {
             jsonResult.setData(blog)
+        }
+        res.json(jsonResult)
+    })
+})
+
+// 新增一条分类
+router.post('/addBlogClass',function (req, res, next) {
+    var jsonResult = new JsonResult()
+    BlogClass.create({blogClassName:req.param('blogClassName')},function (err) {
+        if (err) {
+            jsonResult.setStatue(1)
+            if ( err.code === 11000) {
+                jsonResult.setMessage('分类名已存在!')
+            } else {
+                jsonResult.setMessage(err.message)
+            }
         }
         res.json(jsonResult)
     })
