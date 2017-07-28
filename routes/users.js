@@ -191,8 +191,6 @@ router.post('/deleteItem/:id', function (req, res, next) {
         }
         res.json(jsonResult)
     })
-
-
 })
 
 // 查询单条
