@@ -5,12 +5,15 @@ var mongoose = require('mongoose')
 var db = require('./db.js')
 var async = require('async')
 var Page = require('./Page.js')
+var Blog = require('./Blog')
 
 var BlogClassSchema = mongoose.Schema({
     // 文章名
     "blogClassName": {type:String, unique:true},
-    // 所属分类
-    "blogCount": Number
+    // 已发布数量
+    "blogCount_0": Number,
+    // 草稿数量
+    "blogCount_1": Number
 })
 
 // 分页查询
@@ -42,6 +45,30 @@ BlogClassSchema.statics.queryByPage = function (page, cb) {
         pageResult.setPageCount(Math.ceil(result.total / pageSize))
         pageResult.setCurrentPage(currentPage)
         cb(err,pageResult)
+    })
+}
+
+// 操作文章时引起的分类数量的变更
+BlogClassSchema.statics.setBlogCount = function (className, cb) {
+    async.parallel({
+        blogCount_0: function (done) {
+            Blog.count({titleType: className, statue: '0'},function (err, count) {
+                done(err,count)
+            })
+        },
+        blogCount_1: function (done) {
+            Blog.count({titleType: className, statue: '1'},function (err, count) {
+                done(err,count)
+            })
+        }
+    },function (err, result) {
+        if (err) {
+            cb(err)
+        } else {
+            this.update({blogClassName: className},{$set:{blogCount_0:result.blogCount_0,blogCount_1:result.blogCount_1}},function (err) {
+                cb(err)
+            })
+        }
     })
 }
 
