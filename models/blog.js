@@ -56,4 +56,5 @@ BlogSchema.statics.queryByPage = function (page, cb) {
     })
 }
 
+
 module.exports = db.model('Blog', BlogSchema)
