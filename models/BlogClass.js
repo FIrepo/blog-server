@@ -24,10 +24,7 @@ BlogClassSchema.statics.queryByPage = function (page, cb) {
     var currentPage = page.currentPage || 1
     var start = (currentPage-1) * pageSize
     var pageResult = new Page()
-    queryParams = {
-        /*username: new RegExp(query.username),
-        $and: query.rangeTime[0] ? [{time:{"$gt":query.rangeTime[0]}},{time:{"$lt":query.rangeTime[1]}}] : [{},{}]*/
-    }
+    queryParams = {}
     async.parallel({
         total: function (done) {  // 查询数量
             Model.count(queryParams).exec(function (err, total) {
@@ -50,6 +47,7 @@ BlogClassSchema.statics.queryByPage = function (page, cb) {
 
 // 操作文章时引起的分类数量的变更
 BlogClassSchema.statics.setBlogCount = function (className, cb) {
+    var Model = this
     async.parallel({
         blogCount_0: function (done) {
             Blog.count({titleType: className, statue: '0'},function (err, count) {
@@ -65,7 +63,7 @@ BlogClassSchema.statics.setBlogCount = function (className, cb) {
         if (err) {
             cb(err)
         } else {
-            this.update({blogClassName: className},{$set:{blogCount_0:result.blogCount_0,blogCount_1:result.blogCount_1}},function (err) {
+            Model.update({blogClassName: className},{$set:{blogCount_0:result.blogCount_0,blogCount_1:result.blogCount_1}},function (err) {
                 cb(err)
             })
         }

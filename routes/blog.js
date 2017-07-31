@@ -7,6 +7,7 @@ var mongoose = require('mongoose')
 var Blog = require('../models/Blog')
 var BlogClass = require('../models/BlogClass')
 var Log = require('../models/Log')
+var Comment = require('../models/Comment')
 var JsonResult = require('../models/JsonResult')
 var Page = require('../models/Page')
 
@@ -37,7 +38,12 @@ router.post('/save',function (req, res, next) {
                     jsonResult.setStatue(1)
                     jsonResult.setMessage(err.message)
                 } else {
-                    BlogClass.setBlogCount(blog.titleType)
+                    BlogClass.setBlogCount(blog.titleType, function (err) {
+                        if (err) {
+                            jsonResult.setStatue(1)
+                            jsonResult.setMessage(err.message)
+                        }
+                    })
                 }
                 Log.createOneLog(req, req.session.user + '更新了题目为【' + blog.title + '】的文章')
                 res.json(jsonResult)
@@ -45,12 +51,18 @@ router.post('/save',function (req, res, next) {
     } else {
         // 新增到数据库
         delete blog._id
+        blog['commentNumber'] = 0
         Blog.create(blog, function (err) {
             if (err) {
                 jsonResult.setStatue(1)
                 jsonResult.setMessage(err.message)
             } else {
-                BlogClass.setBlogCount(blog.titleType)
+                BlogClass.setBlogCount(blog.titleType, function (err) {
+                    if (err) {
+                        jsonResult.setStatue(1)
+                        jsonResult.setMessage(err.message)
+                    }
+                })
                 Log.createOneLog(req, req.session.user+'新增了题目为【'+blog.title+'】的文章')
             }
             res.json(jsonResult)
@@ -80,7 +92,12 @@ router.post('/deleteItem/:id/:className',function (req, res, next) {
             jsonResult.setStatue = 1
             jsonResult.setMessage = err
         } else {
-            BlogClass.setBlogCount(req.params.className)
+            BlogClass.setBlogCount(req.params.className, function(err){
+                if (err) {
+                    jsonResult.setStatue(1)
+                    jsonResult.setMessage(err.message)
+                }
+            })
         }
         res.json(jsonResult)
     })
@@ -94,7 +111,12 @@ router.post('/setBlogStatue', function (req, res, next) {
             jsonResult.setStatue(1)
             jsonResult.setMessage(err.message)
         } else {
-            BlogClass.setBlogCount(req.param('className'))
+            BlogClass.setBlogCount(req.param('className'),function (err) {
+                if (err) {
+                    jsonResult.setStatue(1)
+                    jsonResult.setMessage(err.message)
+                }
+            })
         }
         res.json(jsonResult)
     })
@@ -103,7 +125,11 @@ router.post('/setBlogStatue', function (req, res, next) {
 // 新增一条分类
 router.post('/addBlogClass',function (req, res, next) {
     var jsonResult = new JsonResult()
-    BlogClass.create({blogClassName:req.param('blogClassName'), blogCount: 0},function (err) {
+    BlogClass.create({
+        blogClassName:req.param('blogClassName'),
+        blogCount_0: 0,
+        blogCount_1: 0
+    },function (err) {
         if (err) {
             jsonResult.setStatue(1)
             if ( err.code === 11000) {
@@ -113,6 +139,28 @@ router.post('/addBlogClass',function (req, res, next) {
             }
         }
         res.json(jsonResult)
+    })
+})
+
+// 修改文章分类
+router.post('/editBlogClass',function (req, res, next) {
+    var jsonResult = new JsonResult()
+    BlogClass.update({blogClassName: req.param('oldClassName')}, {$set: {blogClassName: req.param('newClassName')}}, function (err, doc) {
+        if (err) {
+            jsonResult.setStatue(1)
+            jsonResult.setMessage(err.message)
+            res.json(jsonResult)
+        } else {
+            Blog.update({titleType: req.param('oldClassName')}, {$set: {titleType: req.param('newClassName')}}, function (err, doc) {
+                if (err) {
+                    jsonResult.setStatue(1)
+                    jsonResult.setMessage(err.message)
+                }
+                res.json(jsonResult)
+            })
+
+        }
+
     })
 })
 
@@ -133,12 +181,26 @@ router.post('/getBlogClass', function (req, res, next) {
 // 删除分类
 router.post('/deleteBlogClass/:id', function (req, res, next) {
     var jsonResult = new JsonResult()
-    BlogClass.removeById(this.params.idm, function (err) {
+    BlogClass.remove({'_id': mongoose.Types.ObjectId(req.params.id)}, function (err) {
         if (err) {
             jsonResult.setMessage(1)
             jsonResult.setStatue(err.message)
         }
         res.json(jsonResult)
+    })
+})
+
+// 根据id获取评论
+router.post('/getComment/:id', function (req, res, next) {
+    var jsonResult = new JsonResult()
+    Comment.queryById(req.params.id, req.param('page'),function (err, comments) {
+        if (err) {
+            jsonResult.setMessage('1')
+            jsonResult.setMessage(err.message)
+        } else {
+            res.json(jsonResult)
+        }
+
     })
 })
 

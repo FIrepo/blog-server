@@ -6,27 +6,23 @@ var db = require('./db.js')
 var async = require('async')
 var Page = require('./Page.js')
 
-var BlogSchema = mongoose.Schema({
-    // 文章名
-    "title": String,
-    // 所属分类
-    "titleType": '',
+var CommentSchema = mongoose.Schema({
+    // 评论内容
+    "body": String,
+    // 评论人
+    "person": '',
+    // 评论谁
+    "byPerson": String,
     // 创建时间
     "cTime": Date,
-    // 作者
-    "author": String,
-    // 内容
-    "content": String,
-    // 关键字
-    "keyword": Array,
-    // 状态 0: 发布,1: 草稿
-    "statue": String,
-    // 评论
-    "commentNumber": Number
+    //  是否是作者
+    "isAuthor": String,
+    // 文章id
+    "blogId": String
 })
 
 // 分页查询
-BlogSchema.statics.queryByPage = function (page, cb) {
+CommentSchema.statics.queryById = function (id, page, cb) {
     var Model = this
     var pageSize = page.pageSize || 10
     var query = page.query
@@ -34,10 +30,11 @@ BlogSchema.statics.queryByPage = function (page, cb) {
     var start = (currentPage-1) * pageSize
     var pageResult = new Page()
     queryParams = {
-        title: new RegExp(query.title),
+        'blogId': id
+        /*title: new RegExp(query.title),
         titleType: new RegExp(query.titleType),
         statue: new RegExp(query.statue),
-        $and: query.rangeTime[0] ? [{cTime:{"$gt":query.rangeTime[0]}},{cTime:{"$lt":query.rangeTime[1]}}] : [{},{}]
+        $and: query.rangeTime[0] ? [{cTime:{"$gt":query.rangeTime[0]}},{cTime:{"$lt":query.rangeTime[1]}}] : [{},{}]*/
     }
     async.parallel({
         total: function (done) {  // 查询数量
@@ -59,4 +56,4 @@ BlogSchema.statics.queryByPage = function (page, cb) {
     })
 }
 
-module.exports = db.model('Blog', BlogSchema)
+module.exports = db.model('Comment', CommentSchema)
