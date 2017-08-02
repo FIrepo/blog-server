@@ -11,6 +11,9 @@ var users = require('./routes/users');
 var log = require('./routes/log');
 var blog = require('./routes/blog');
 
+// 前台展示
+var show =require('./routes/show')
+
 var app = express();
 
 // view engine setup
@@ -52,6 +55,9 @@ app.use('/', index);
 app.use('/api/users', users);
 app.use('/api/log', log);
 app.use('/api/blog', blog);
+
+app.use('/api/show/', show)
+
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
     var err = new Error('Not Found');
