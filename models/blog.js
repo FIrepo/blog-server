@@ -10,7 +10,9 @@ var BlogSchema = mongoose.Schema({
     // 文章名
     "title": String,
     // 所属分类
-    "titleType": '',
+    "titleType": String,
+    // 简述
+    "abstract": String,
     // 创建时间
     "cTime": Date,
     // 作者
@@ -33,12 +35,12 @@ BlogSchema.statics.queryByPage = function (page, cb) {
     var currentPage = page.currentPage || 1
     var start = (currentPage-1) * pageSize
     var pageResult = new Page()
-    queryParams = {
+    queryParams = query ? {
         title: new RegExp(query.title),
         titleType: new RegExp(query.titleType),
         statue: new RegExp(query.statue),
         $and: query.rangeTime[0] ? [{cTime:{"$gt":query.rangeTime[0]}},{cTime:{"$lt":query.rangeTime[1]}}] : [{},{}]
-    }
+    } : {}
     async.parallel({
         total: function (done) {  // 查询数量
             Model.count(queryParams).exec(function (err, total) {
