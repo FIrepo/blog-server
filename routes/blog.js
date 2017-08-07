@@ -73,7 +73,7 @@ router.post('/save',function (req, res, next) {
 // 根据id获得一条数据
 router.post('/getBlog', function (req, res, next) {
     var jsonResult = new JsonResult()
-    Blog.findById(req.param('id'), function (err, blog) {
+    Blog.findById(req.param('id'),{'blogHtmlContent': 0}, function (err, blog) {
         if (err) {
             jsonResult.setStatue(1)
         } else {

@@ -24,7 +24,9 @@ var BlogSchema = mongoose.Schema({
     // 状态 0: 发布,1: 草稿
     "statue": String,
     // 评论
-    "commentNumber": Number
+    "commentNumber": Number,
+    // html格式的文章
+    blogHtmlContent: String
 })
 
 // 分页查询
@@ -48,7 +50,7 @@ BlogSchema.statics.queryByPage = function (page, cb) {
             })
         },
         rows: function (done) {   // 查询一页的记录
-            Model.find(queryParams,{"content": 0, 'comment': 0}).skip(start).limit(pageSize).exec(function (err, rows) {
+            Model.find(queryParams,{"content": 0, 'comment': 0, 'blogHtmlContent': 0}).skip(start).limit(pageSize).exec(function (err, rows) {
                 done(err, rows);
             });
         }
