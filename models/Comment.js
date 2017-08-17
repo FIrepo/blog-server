@@ -1,16 +1,16 @@
 /**
  * Created by Administrator on 2017/7/6.
  */
-var mongoose = require('mongoose')
-var db = require('./db.js')
-var async = require('async')
-var Page = require('./Page.js')
+const mongoose = require('mongoose')
+const db = require('./db.js')
+const async = require('async')
+const Page = require('./Page.js')
 
-var CommentSchema = mongoose.Schema({
+const CommentSchema = mongoose.Schema({
     // 评论内容
     "body": String,
     // 评论人
-    "person": '',
+    "person": String,
     // 评论谁
     "byPerson": String,
     // 创建时间
@@ -23,12 +23,12 @@ var CommentSchema = mongoose.Schema({
 
 // 分页查询
 CommentSchema.statics.queryById = function (id, page, cb) {
-    var Model = this
-    var pageSize = page.pageSize || 10
-    var query = page.query
-    var currentPage = page.currentPage || 1
-    var start = (currentPage-1) * pageSize
-    var pageResult = new Page()
+    let Model = this
+    let pageSize = page.pageSize || 10
+    let query = page.query
+    let currentPage = page.currentPage || 1
+    let start = (currentPage-1) * pageSize
+    let pageResult = new Page()
     queryParams = {
         'blogId': id
         /*title: new RegExp(query.title),

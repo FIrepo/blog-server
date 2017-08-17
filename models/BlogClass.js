@@ -1,13 +1,13 @@
 /**
  * Created by Administrator on 2017/7/6.
  */
-var mongoose = require('mongoose')
-var db = require('./db.js')
-var async = require('async')
-var Page = require('./Page.js')
-var Blog = require('./Blog')
+let mongoose = require('mongoose')
+let db = require('./db.js')
+let async = require('async')
+let Page = require('./Page.js')
+let Blog = require('./Blog')
 
-var BlogClassSchema = mongoose.Schema({
+let BlogClassSchema = mongoose.Schema({
     // 文章名
     "blogClassName": {type:String, unique:true},
     // 已发布数量
@@ -18,12 +18,12 @@ var BlogClassSchema = mongoose.Schema({
 
 // 分页查询
 BlogClassSchema.statics.queryByPage = function (page, cb) {
-    var Model = this
-    var pageSize = page.pageSize || 10
-    var query = page.query
-    var currentPage = page.currentPage || 1
-    var start = (currentPage-1) * pageSize
-    var pageResult = new Page()
+    let Model = this
+    let pageSize = page.pageSize || 10
+    let query = page.query
+    let currentPage = page.currentPage || 1
+    let start = (currentPage-1) * pageSize
+    let pageResult = new Page()
     queryParams = {}
     async.parallel({
         total: function (done) {  // 查询数量
@@ -47,26 +47,39 @@ BlogClassSchema.statics.queryByPage = function (page, cb) {
 
 // 操作文章时引起的分类数量的变更
 BlogClassSchema.statics.setBlogCount = function (className, cb) {
-    var Model = this
-    async.parallel({
-        blogCount_0: function (done) {
-            Blog.count({titleType: className, statue: '0'},function (err, count) {
-                done(err,count)
-            })
-        },
-        blogCount_1: function (done) {
-            Blog.count({titleType: className, statue: '1'},function (err, count) {
-                done(err,count)
-            })
-        }
-    },function (err, result) {
-        if (err) {
+    let Model = this
+    Model.find({},{"blogClassName":1,"_id":0},function (err, classes) {
+        let querys = []
+        classes.forEach(function (item) {
+            querys.push(
+                new Promise(function(resolve, reject) {
+                    async.parallel({
+                        blogCount_0: function (done) {
+                            Blog.count({titleType: item.blogClassName, statue: '0'},function (err, count) {
+                                done(err,count)
+                            })
+                        },
+                        blogCount_1: function (done) {
+                            Blog.count({titleType: item.blogClassName, statue: '1'},function (err, count) {
+                                done(err,count)
+                            })
+                        }
+                    },function (err, result) {
+                        if (err) {
+                            reject(err)
+                        } else {
+                            Model.update({blogClassName: item.blogClassName},{$set:{blogCount_0:result.blogCount_0,blogCount_1:result.blogCount_1}},function (err) {
+                                if (err) reject(err)
+                                resolve(err)
+                            })
+                        }
+                    })
+                })
+            )
+        })
+        Promise.all(querys).catch((err) => {
             cb(err)
-        } else {
-            Model.update({blogClassName: className},{$set:{blogCount_0:result.blogCount_0,blogCount_1:result.blogCount_1}},function (err) {
-                cb(err)
-            })
-        }
+        })
     })
 }
 

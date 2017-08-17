@@ -1,19 +1,19 @@
 /**
  * Created by Administrator on 2017/7/24.
  */
-var express = require('express')
-var router = express.Router()
-var mongoose = require('mongoose')
-var Blog = require('../models/Blog')
-var BlogClass = require('../models/BlogClass')
-var Log = require('../models/Log')
-var Comment = require('../models/Comment')
-var JsonResult = require('../models/JsonResult')
-var Page = require('../models/Page')
+const express = require('express')
+const router = express.Router()
+const mongoose = require('mongoose')
+const Blog = require('../models/Blog')
+const BlogClass = require('../models/BlogClass')
+const Log = require('../models/Log')
+const Comment = require('../models/Comment')
+const JsonResult = require('../models/JsonResult')
+const Page = require('../models/Page')
 
 // 分页查询
 router.all('/getBlogs', function (req, res, next) {
-    var jsonResult = new JsonResult()
+    let jsonResult = new JsonResult()
     Blog.queryByPage(req.param('page'),function (err,logs) {
         if (err) {
             jsonResult.setStatue(1)
@@ -26,8 +26,8 @@ router.all('/getBlogs', function (req, res, next) {
 
 // 保存文章
 router.post('/save',function (req, res, next) {
-    var jsonResult = new JsonResult()
-    var blog = req.param('blog')
+    let jsonResult = new JsonResult()
+    let blog = req.param('blog')
     blog['cTime'] = new Date()
     if (blog._id) {
         //  修改
@@ -72,7 +72,7 @@ router.post('/save',function (req, res, next) {
 
 // 根据id获得一条数据
 router.post('/getBlog', function (req, res, next) {
-    var jsonResult = new JsonResult()
+    let jsonResult = new JsonResult()
     Blog.findById(req.param('id'),{'blogHtmlContent': 0}, function (err, blog) {
         if (err) {
             jsonResult.setStatue(1)
@@ -85,7 +85,7 @@ router.post('/getBlog', function (req, res, next) {
 
 // 删除一个
 router.post('/deleteItem/:id/:className',function (req, res, next) {
-    var jsonResult = new JsonResult()
+    let jsonResult = new JsonResult()
 
     Blog.remove({_id: mongoose.Types.ObjectId(req.params.id)}, function (err) {
         if (err) {
@@ -192,15 +192,27 @@ router.post('/deleteBlogClass/:id', function (req, res, next) {
 
 // 根据id获取评论
 router.post('/getComment/:id', function (req, res, next) {
-    var jsonResult = new JsonResult()
+    let jsonResult = new JsonResult()
     Comment.queryById(req.params.id, req.param('page'),function (err, comments) {
         if (err) {
             jsonResult.setMessage('1')
             jsonResult.setMessage(err.message)
         } else {
+            jsonResult.setData(comments)
             res.json(jsonResult)
         }
+    })
+})
 
+// 删除单条
+router.post('/comment/delete/:id', function (req, res, next) {
+    let jsonResult = new JsonResult()
+    Comment.remove({_id: mongoose.Types.ObjectId(req.params.id)}, function (err) {
+        if (err) {
+            jsonResult.setStatue(1)
+            jsonResult.setMessage(err.message)
+        }
+        res.json(jsonResult)
     })
 })
 

@@ -1,17 +1,17 @@
-var express = require('express');
-var router = express.Router();
-var Page = require('../models/Page')
-var JsonResult = require('../models/JsonResult')
-var User = require('../models/User')
-var MD5 = require('md5')
-var mongoose = require('mongoose')
-var Log = require('../models/Log')
+const express = require('express');
+const router = express.Router();
+const Page = require('../models/Page')
+const JsonResult = require('../models/JsonResult')
+const User = require('../models/User')
+const MD5 = require('md5')
+const mongoose = require('mongoose')
+const Log = require('../models/Log')
 
 // 登录
 router.post('/login', function (req, res, next) {
-    var jsonResult = new JsonResult()
-    var username = req.param('username');
-    var password = req.param('password');
+    let jsonResult = new JsonResult()
+    let username = req.param('username');
+    let password = req.param('password');
     User.findOne({userName: username}, function (err, doc) {
         if (doc) {
             if (MD5(password.substring(3, 7)) === doc.password) {
@@ -35,7 +35,7 @@ router.post('/login', function (req, res, next) {
 
 // 登出
 router.post('/loginOut', function (req, res, next) {
-    var jsonResult = new JsonResult()
+    let jsonResult = new JsonResult()
     Log.createOneLog(req, req.session.user + '登出', function (err) {
         req.session.user = false
         res.json(jsonResult)
@@ -45,10 +45,10 @@ router.post('/loginOut', function (req, res, next) {
 
 // 重置密码
 router.post('/resetPassword', function (req, res, next) {
-    var jsonResult = new JsonResult()
-    var id = req.param('id')
-    var changedName = req.param('changedName')
-    var password = MD5(req.param('password').substring(3, 7))
+    let jsonResult = new JsonResult()
+    let id = req.param('id')
+    let changedName = req.param('changedName')
+    let password = MD5(req.param('password').substring(3, 7))
     User.findOne({'userName': req.session.user}, function (err, doc) {
         console.log(doc)
         if (doc.password === password) {
@@ -80,8 +80,8 @@ router.post('/resetPassword', function (req, res, next) {
 
 //  根据token获取用户信息
 router.post('/getUserByToken', function (req, res, next) {
-    var jsonResult = new JsonResult()
-    var token = req.cookies['Admin-Token']
+    let jsonResult = new JsonResult()
+    let token = req.cookies['Admin-Token']
     if (token) {
         User.findOne({'userName': token}, function (err, user) {
             if (err) {
@@ -105,8 +105,8 @@ router.post('/getUserByToken', function (req, res, next) {
 
 // 获取列表
 router.post('/getUser', function (req, res, next) {
-    var page = new Page()
-    var jsonResult = new JsonResult()
+    let page = new Page()
+    let jsonResult = new JsonResult()
 
     User.queryByPage(req.param('page'), function (err, users) {
         if (err) {
@@ -116,26 +116,12 @@ router.post('/getUser', function (req, res, next) {
         jsonResult.setData(users)
         res.json(jsonResult)
     })
-    /*User.find(function (err, rows) {
-
-     if (err) {
-     jsonResult.setStatue(1)
-     jsonResult.setMessage(err.message)
-     } else {
-     page.setRows(rows)
-     page.setTotal(rows.length)
-     jsonResult.setData(page)
-     }
-
-     res.json(jsonResult)
-     })*/
-
 })
 
 // 保存方法
 router.post('/addItem', function (req, res, next) {
-    var jsonResult = new JsonResult()
-    var userItem = req.param('form')
+    let jsonResult = new JsonResult()
+    let userItem = req.param('form')
 
     if (userItem['password'].length !== 32) {
         userItem['password'] = MD5(userItem['password'].substring(3, 7))
@@ -154,7 +140,7 @@ router.post('/addItem', function (req, res, next) {
             })
     } else {
         userItem['rTime'] = new Date()
-        var user = new User(userItem)
+        let user = new User(userItem)
         user.save(function (err) {
             if (err) {
                 jsonResult.setStatue(1)
@@ -176,7 +162,7 @@ router.post('/addItem', function (req, res, next) {
 
 // 删除方法
 router.post('/deleteItem/:id', function (req, res, next) {
-    var jsonResult = new JsonResult()
+    let jsonResult = new JsonResult()
 
     /* if (req.params.username === 'admin') {
      jsonResult.setStatue = 1
@@ -195,7 +181,7 @@ router.post('/deleteItem/:id', function (req, res, next) {
 
 // 查询单条
 router.post('/getOne/:id', function (req, res, next) {
-    var jsonResult = new JsonResult()
+    let jsonResult = new JsonResult()
     User.findOne({'_id': mongoose.Types.ObjectId(req.params.id)}, function (err, doc) {
         if (err) {
             jsonResult.setStatue = 1
@@ -205,5 +191,6 @@ router.post('/getOne/:id', function (req, res, next) {
         res.json(jsonResult)
     })
 })
+
 
 module.exports = router
