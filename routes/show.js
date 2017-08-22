@@ -8,13 +8,26 @@ const JsonResult = require('../models/JsonResult')
 
 // 获取博客
 router.get('/getBlogs', function(req, res, next) {
+    let keyword = req.param('keyword')
+    console.log(keyword)
     Blog.find({
-        statue: '0'
+        statue: '0',
+        $or: [
+            {'title': {'$regex': keyword, $options: '$i'}},
+            {'content': {'$regex': keyword, $options: '$i'}}
+        ]
     },{"content": 0})
         .limit(req.param("pageSize")).exec(function (err, blogs) {
-        res.json(blogs)
-    });
-});
+            if (!blogs) res.json(blogs)
+            for(let i=0;i<blogs.length;i++){
+                let item = blogs[i]
+                if (!item) continue
+                let reg = new RegExp("<[^<]*>", "gi")
+                blogs[i].blogHtmlContent = item.blogHtmlContent.replace(reg, "")
+            }
+            res.json(blogs)
+    })
+})
 
 // 获取博客依靠年分类
 router.get('/getBlogsYear', function(req, res, next) {
@@ -36,7 +49,7 @@ router.get('/getBlogsYear', function(req, res, next) {
         }
         res.json(result)
     });
-});
+})
 
 // 根据id查询文章
 router.get('/getBlogById', function (req, res, next) {
